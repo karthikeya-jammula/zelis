@@ -3,6 +3,7 @@ import express from "express";
 import { existsSync } from "fs";
 import morgan from "morgan";
 import { dirname, join } from "path";
+import rateLimit from "express-rate-limit";
 import { fileURLToPath } from "url";
 import { connectDb } from "./config/db.js";
 import { env } from "./config/env.js";
@@ -12,6 +13,16 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 
+const limiter = rateLimit({
+  // 200 requests per 15 minutes per IP — generous for normal use while
+  // still protecting filesystem-backed routes from naive DoS sweeps.
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+app.use(limiter);
 app.use(cors());
 app.use(express.json({ limit: "1mb" }));
 app.use(morgan("dev"));
@@ -28,7 +39,10 @@ if (existsSync(clientDist)) {
   app.use(express.static(clientDist));
   app.get("*", (_req, res) => {
     res.sendFile(join(clientDist, "index.html"), (err) => {
-      if (err) res.status(500).send("Error serving the application.");
+      if (err) {
+        console.error("Error serving index.html:", err);
+        res.status(500).send("Failed to load application: " + err.message);
+      }
     });
   });
 }

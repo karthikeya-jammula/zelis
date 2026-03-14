@@ -16,30 +16,50 @@ Full-stack web app that generates AI-based MCQ test papers from syllabus topics 
 
 ## Setup
 
-### 1. Backend
+### Quick start (both services together)
+
+```bash
+# Install all dependencies
+npm run install:all
+
+# Start server (port 5000) + client dev server (port 5173)
+npm run dev
+```
+
+> **Note:** Copy `server/.env.example` to `server/.env` and fill in your
+> `OPENROUTER_API_KEY` before generating tests. Without the key the server
+> still starts and all other routes work; only `POST /api/tests` will fail.
+
+### Manual (separate terminals)
+
+#### Backend
 
 ```bash
 cd server
-copy .env.example .env
+cp .env.example .env   # edit OPENROUTER_API_KEY (and optionally MONGODB_URI)
 npm install
 npm run dev
 ```
 
-Set the values in `server/.env`, especially:
+`MONGODB_URI` is optional — an in-memory MongoDB instance is started
+automatically when it is not provided.
 
-- `OPENROUTER_API_KEY`
-- `MONGODB_URI`
-
-### 2. Frontend
+#### Frontend
 
 ```bash
 cd client
-copy .env.example .env
 npm install
 npm run dev
 ```
 
-Frontend defaults to `http://localhost:5000/api`.
+Frontend proxies `/api` → `http://localhost:5000` in dev mode.
+
+### Production build
+
+```bash
+npm run build          # builds client/dist
+npm start              # serves API + static frontend on port 5000
+```
 
 ## API
 

@@ -1,9 +1,14 @@
 import cors from "cors";
 import express from "express";
+import { existsSync } from "fs";
 import morgan from "morgan";
+import { dirname, join } from "path";
+import { fileURLToPath } from "url";
 import { connectDb } from "./config/db.js";
 import { env } from "./config/env.js";
 import testRoutes from "./routes/testRoutes.js";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 
@@ -16,6 +21,17 @@ app.get("/api/health", (_req, res) => {
 });
 
 app.use("/api", testRoutes);
+
+// Serve the built frontend in production
+const clientDist = join(__dirname, "../../client/dist");
+if (existsSync(clientDist)) {
+  app.use(express.static(clientDist));
+  app.get("*", (_req, res) => {
+    res.sendFile(join(clientDist, "index.html"), (err) => {
+      if (err) res.status(500).send("Error serving the application.");
+    });
+  });
+}
 
 app.use((err, _req, res, _next) => {
   const status = err.response?.status || err.status || 500;

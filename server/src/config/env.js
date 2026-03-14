@@ -2,12 +2,11 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const required = ["OPENROUTER_API_KEY"];
-
-for (const key of required) {
-  if (!process.env[key]) {
-    throw new Error(`Missing required environment variable: ${key}`);
-  }
+if (!process.env.OPENROUTER_API_KEY) {
+  console.warn(
+    "Warning: OPENROUTER_API_KEY is not set. " +
+      "Test generation will fail until a valid key is provided in server/.env."
+  );
 }
 
 export const env = {
